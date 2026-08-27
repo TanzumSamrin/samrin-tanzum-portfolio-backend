@@ -76,3 +76,8 @@ This project does not include a license file. Add a `LICENSE` if you want to app
 ## Contact
 
 If you have questions, open an issue or contact the repository owner.
+
+## Demo Superuser Credentials
+- Username: admin1
+- Password: admin1
+
