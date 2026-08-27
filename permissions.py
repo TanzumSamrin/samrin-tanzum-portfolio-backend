@@ -22,3 +22,18 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         
         # Write methods require authentication and superuser status
         return request.user and request.user.is_authenticated and request.user.is_superuser
+
+
+class IsOwnerOnly(permissions.BasePermission):
+    """
+    Require an authenticated superuser for EVERY method, including GET.
+
+    Use this for anything that must stay fully invisible to visitors:
+    dashboard stats, the contact inbox, and the comment-moderation queue
+    (which contains unapproved comments and commenter emails).
+    """
+
+    def has_permission(self, request, view):
+        return bool(
+            request.user and request.user.is_authenticated and request.user.is_superuser
+        )
