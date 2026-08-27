@@ -6,12 +6,17 @@ from blog.models import Post, Category, Tag
 from projects.models import Project
 from core.models import Skill
 from interactions.models import Comment, ContactMessage
-from permissions import IsOwnerOrReadOnly
+from permissions import IsOwnerOnly
 
 class DashboardStatsView(APIView):
-    permission_classes = [IsOwnerOrReadOnly]
+    # IsOwnerOnly, not IsOwnerOrReadOnly: this endpoint must be fully
+    # invisible to visitors (Figure 1 — "owner only"), but
+    # IsOwnerOrReadOnly allows GET for anyone since it's a safe method.
+    permission_classes = [IsOwnerOnly]
 
     def get(self, request):
+        from interactions.models import PostLike
+
         # Total counts
         total_posts = Post.objects.count()
         published_posts = Post.objects.filter(status='PUBLISHED').count()
@@ -20,7 +25,7 @@ class DashboardStatsView(APIView):
         total_skills = Skill.objects.count()
         total_comments = Comment.objects.count()
         pending_comments = Comment.objects.filter(is_approved=False).count()
-        total_likes = Sum('posts__likes')  # This needs to be calculated properly
+        total_likes = PostLike.objects.count()
         total_views = Post.objects.aggregate(Sum('views_count'))['views_count__sum'] or 0
         unread_messages = ContactMessage.objects.filter(is_read=False).count()
 
@@ -57,6 +62,7 @@ class DashboardStatsView(APIView):
             'total_skills': total_skills,
             'total_comments': total_comments,
             'pending_comments': pending_comments,
+            'total_likes': total_likes,
             'total_views': total_views,
             'unread_messages': unread_messages,
             'top_posts': top_posts,
