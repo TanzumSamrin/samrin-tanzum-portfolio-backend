@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from django.utils.text import slugify
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -65,9 +66,11 @@ class Post(models.Model):
         word_count = len(self.content.split())
         self.reading_time = max(1, round(word_count / 200))
         
-        # Auto-set published_at when status changes to PUBLISHED
+        # Auto-set published_at on the first DRAFT -> PUBLISHED transition only.
+        # Never overwritten afterwards (per spec B-21), even if the post is
+        # unpublished and republished later.
         if self.status == 'PUBLISHED' and not self.published_at:
-            self.published_at = models.DateTimeField(auto_now_add=True)
+            self.published_at = timezone.now()
         
         super().save(*args, **kwargs)
 
